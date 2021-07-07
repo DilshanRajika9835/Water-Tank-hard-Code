@@ -1,2 +1,2 @@
-# Water-Tank-hard-Code
+# Water-Tank-Hard-Code
 Java fundamental Water tank Hard Code
