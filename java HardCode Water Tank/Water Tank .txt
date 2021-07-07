@@ -1,0 +1,376 @@
+Exercise (WaterTank)
+======================
+import java.util.*;
+class Alarm{
+	String alarmId;
+	Alarm(String alarmId){this.alarmId=alarmId;}
+	public void operateAlarm(int waterLevel){
+		System.out.println("Alarm "+alarmId+" : "+(waterLevel>=50 ? "   ON":"  OFF"));
+	}
+}
+class Display{
+	public void displayWaterLevel(int waterLevel){
+		System.out.println("Water Level : "+waterLevel);
+	}
+}
+class SMSSender{
+	public void sendSMS(int waterLevel){
+		System.out.println("Sending SMS : "+waterLevel);
+	}
+}
+class ControlRoom{
+	private Alarm alarm;
+	private Display display;
+	private SMSSender smsSender;
+	
+	private int waterLevel;
+	
+	public void addAlarm(Alarm alarm){
+		this.alarm=alarm;
+	}
+	public void addDisplay(Display display){
+		this.display=display;
+	}
+	public void addSMSSender(SMSSender smsSender){
+		this.smsSender=smsSender;
+	}
+	public void notifyObjects(){
+		alarm.operateAlarm(waterLevel);
+		display.displayWaterLevel(waterLevel);
+		smsSender.sendSMS(waterLevel);
+	}
+	public void setWaterLevel(int waterLevel){
+		if(this.waterLevel!=waterLevel){
+			this.waterLevel=waterLevel;
+			notifyObjects();
+		}
+	}  
+}
+class Demo{
+	public static void main(String args[]){
+		ControlRoom controlRoom=new ControlRoom();
+		controlRoom.addAlarm(new Alarm("One"));
+		controlRoom.addDisplay(new Display());
+		controlRoom.addSMSSender(new SMSSender());
+		
+		//-------------------------------
+		Random r=new Random();
+		while(true){
+			int rand=r.nextInt(101); //0 to 100
+			controlRoom.setWaterLevel(rand);
+			try{Thread.sleep(1000);}catch(Exception ex){}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+Q168 From Q167  (Adding a Splitter and another Alarm object)
+===================================================
+import java.util.*;
+class Alarm{
+	String alarmId;
+	Alarm(String alarmId){this.alarmId=alarmId;}
+	public void operateAlarm(int waterLevel){
+		System.out.println("Alarm "+alarmId+" : "+(waterLevel>=50 ? "   ON":"  OFF"));
+	}
+	public String getAlarmId(){
+		return alarmId;
+	}
+}
+class Display{
+	public void displayWaterLevel(int waterLevel){
+		System.out.println("Water Level : "+waterLevel);
+	}
+}
+class SMSSender{
+	public void sendSMS(int waterLevel){
+		System.out.println("Sending SMS : "+waterLevel);
+	}
+}
+class Splitter{
+	public void split(int waterLevel){
+		System.out.println(waterLevel>=75 ? "Splitter ON":"Splitter OFF");
+	} 
+}
+class ControlRoom{
+	private Alarm alarm1;
+	private Alarm alarm2;
+	private Display display;
+	private SMSSender smsSender;
+	private Splitter splitter;
+	private int waterLevel;
+	
+	public void addAlarm(Alarm alarm){
+		if(alarm.getAlarmId()=="One"){
+			alarm1=alarm;
+		}if(alarm.getAlarmId()=="Two"){
+			this.alarm2=alarm;
+		}
+	}
+	public void addSplitter(Splitter splitter){
+		this.splitter=splitter;
+	}
+	public void addDisplay(Display display){
+		this.display=display;
+	}
+	public void addSMSSender(SMSSender smsSender){
+		this.smsSender=smsSender;
+	}
+	public void notifyObjects(){
+		alarm1.operateAlarm(waterLevel);
+		alarm2.operateAlarm(waterLevel);
+		display.displayWaterLevel(waterLevel);
+		smsSender.sendSMS(waterLevel);
+		splitter.split(waterLevel);
+	}
+	public void setWaterLevel(int waterLevel){
+		if(this.waterLevel!=waterLevel){
+			this.waterLevel=waterLevel;
+			notifyObjects();
+		}
+	}  
+}
+class Demo{
+	public static void main(String args[]){
+		ControlRoom controlRoom=new ControlRoom();
+		controlRoom.addAlarm(new Alarm("One"));
+		controlRoom.addDisplay(new Display());
+		controlRoom.addSMSSender(new SMSSender());
+		
+		//-------------------------------
+		controlRoom.addAlarm(new Alarm("Two"));
+		controlRoom.addAlarm(new Alarm("Three"));
+		controlRoom.addSplitter(new Splitter()); //-->waterLevel>=75 ? "Splitter ON" else "Splitter OFF"
+		
+		Random r=new Random();
+		while(true){
+			int rand=r.nextInt(101); //0 to 100
+			controlRoom.setWaterLevel(rand);
+			try{Thread.sleep(1000);}catch(Exception ex){}
+		}
+	}
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+Q169 From Q167 Using “Polymorphism”
+=================================
+import java.util.*;
+class WaterLevelObserver{
+	public void update(int waterLevel){
+		//
+	}
+}
+class Alarm extends WaterLevelObserver{
+	String alarmId;
+	Alarm(String alarmId){this.alarmId=alarmId;}
+	public void update(int waterLevel){
+		System.out.println("Alarm "+alarmId+" : "+(waterLevel>=50 ? "   ON":"  OFF"));
+	}
+}
+class Display extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println("Water Level : "+waterLevel);
+	}
+}
+class SMSSender extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println("Sending SMS : "+waterLevel);
+	}
+}
+class ControlRoom{
+	private WaterLevelObserver[] observerArray=new WaterLevelObserver[100];
+	private int nextIndex=0;
+	private int waterLevel;
+	
+	public void addWaterLevelObserver(WaterLevelObserver ob){
+		observerArray[nextIndex++]=ob;
+	}
+	public void notifyObjects(){
+		for(int i=0; i<nextIndex; i++){
+			observerArray[i].update(waterLevel);
+		}
+	}
+	public void setWaterLevel(int waterLevel){
+		if(this.waterLevel!=waterLevel){
+			this.waterLevel=waterLevel;
+			notifyObjects();
+		}
+	}  
+}
+class Demo{
+	public static void main(String args[]){
+		ControlRoom controlRoom=new ControlRoom();
+		controlRoom.addWaterLevelObserver(new Alarm("One"));
+		controlRoom.addWaterLevelObserver(new Alarm("Two"));
+		controlRoom.addWaterLevelObserver(new Display());
+		controlRoom.addWaterLevelObserver(new SMSSender());
+		
+		
+		//-------------------------------
+		Random r=new Random();
+		while(true){
+			int rand=r.nextInt(101); //0 to 100
+			controlRoom.setWaterLevel(rand);
+			try{Thread.sleep(1000);}catch(Exception ex){}
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+Q170 From Q169 (Adding a Splitter)
+=============================
+import java.util.*;
+class WaterLevelObserver{
+	public void update(int waterLevel){
+		//
+	}
+}
+class Splitter extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println(waterLevel>=75 ? "Splitter ON":"Splitter OFF");
+	}		
+} 
+class Alarm extends WaterLevelObserver{
+	String alarmId;
+	Alarm(String alarmId){this.alarmId=alarmId;}
+	public void update(int waterLevel){
+		System.out.println("Alarm "+alarmId+" : "+(waterLevel>=50 ? "   ON":"  OFF"));
+	}
+}
+class Display extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println("Water Level : "+waterLevel);
+	}
+}
+class SMSSender extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println("Sending SMS : "+waterLevel);
+	}
+}
+class ControlRoom{
+	private WaterLevelObserver[] observerArray=new WaterLevelObserver[100];
+	private int nextIndex=0;
+	private int waterLevel;
+	
+	public void addWaterLevelObserver(WaterLevelObserver ob){
+		observerArray[nextIndex++]=ob;
+	}
+	public void notifyObjects(){
+		for(int i=0; i<nextIndex; i++){
+			observerArray[i].update(waterLevel); //update(int)-->single interface
+		}
+	}
+	public void setWaterLevel(int waterLevel){
+		if(this.waterLevel!=waterLevel){
+			this.waterLevel=waterLevel;
+			notifyObjects();
+		}
+	}  
+}
+class Demo{
+	public static void main(String args[]){
+		ControlRoom controlRoom=new ControlRoom();
+		controlRoom.addWaterLevelObserver(new Alarm("One"));
+		controlRoom.addWaterLevelObserver(new Alarm("Two"));
+		controlRoom.addWaterLevelObserver(new Display());
+		controlRoom.addWaterLevelObserver(new SMSSender());
+		controlRoom.addWaterLevelObserver(new Splitter());
+		
+		//-------------------------------
+		Random r=new Random();
+		while(true){
+			int rand=r.nextInt(101); //0 to 100
+			controlRoom.setWaterLevel(rand);
+			try{Thread.sleep(1000);}catch(Exception ex){}
+		}
+	}
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+Q171 From Q170 Using class “ArrayList”
+================================
+import java.util.*;
+class WaterLevelObserver{
+	public void update(int waterLevel){
+		//
+	}
+}
+class Splitter extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println(waterLevel>=75 ? "Splitter ON":"Splitter OFF");
+	}		
+} 
+class Alarm extends WaterLevelObserver{
+	String alarmId;
+	Alarm(String alarmId){this.alarmId=alarmId;}
+	public void update(int waterLevel){
+		System.out.println("Alarm "+alarmId+" : "+(waterLevel>=50 ? "   ON":"  OFF"));
+	}
+}
+class Display extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println("Water Level : "+waterLevel);
+	}
+}
+class SMSSender extends WaterLevelObserver{
+	public void update(int waterLevel){
+		System.out.println("Sending SMS : "+waterLevel);
+	}
+}
+class ControlRoom{
+	private ArrayList <WaterLevelObserver>observerList=new ArrayList<>();
+	private int waterLevel;
+	
+	public void addWaterLevelObserver(WaterLevelObserver ob){
+		observerList.add(ob);
+	}
+	public void notifyObjects(){
+		for(WaterLevelObserver ob: observerList){
+			ob.update(waterLevel);
+		}
+	}
+	public void setWaterLevel(int waterLevel){
+		if(this.waterLevel!=waterLevel){
+			this.waterLevel=waterLevel;
+			notifyObjects();
+		}
+	}  
+}
+class Demo{
+	public static void main(String args[]){
+		ControlRoom controlRoom=new ControlRoom();
+		controlRoom.addWaterLevelObserver(new Alarm("One"));
+		controlRoom.addWaterLevelObserver(new Alarm("Two"));
+		controlRoom.addWaterLevelObserver(new Display());
+		controlRoom.addWaterLevelObserver(new SMSSender());
+		controlRoom.addWaterLevelObserver(new Splitter());
+		
+		//-------------------------------
+		Random r=new Random();
+		while(true){
+			int rand=r.nextInt(101); //0 to 100
+			controlRoom.setWaterLevel(rand);
+			try{Thread.sleep(1000);}catch(Exception ex){}
+		}
+	}
+}
